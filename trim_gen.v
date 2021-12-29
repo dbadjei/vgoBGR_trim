@@ -39,17 +39,15 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
         //On reset, return to idle state
         if (RST) begin
             state <= STATE_IDLE;
+            trimcode_hold <= 11'd0;
+            TRIMCODE <= 11'd0;
+            div_clk <= 1'b0;
+            DOUT <= 0;
         end
         //Define the state transitions
         else begin
             case (state)
                 STATE_IDLE: begin
-                    trimcode_hold <= 11'd0;
-                    TRIMCODE <= 11'd0;
-                    div_clk <= 1'b0;
-                    clk_count <= 25'd0;
-                    DOUT <= 0;
-
                     if (START == 1'b1) begin
                         state <= STATE_INITIAL;
                     end

@@ -14,20 +14,16 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
     localparam MAX_CLK_COUNT = 25'd25000000;
     localparam MAX_T_COUNT = 4'd12;
 
-    //Internal signals
-    wire [11:0] trim_code
-
     //Internal storage elements
     reg [11:0] trimcode_hold;
     reg [1:0] state;
     reg div_clk;
     reg [24:0] clk_count;
     reg [3:0] t;
-    reg load, enable;
 
     //Clock divider
     always @(posedge CLK50 or posedge RST) begin
-        if RST begin 
+        if (RST) begin 
             clk_count <= 25'b0;
         end
         else if (clk_count == MAX_CLK_COUNT) begin
@@ -50,7 +46,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
                 STATE_IDLE: begin
                     trimcode_hold <= 11'd0;
                     TRIMCODE <= 11'd0;
-                    div_clock <= 1'b0;
+                    div_clk <= 1'b0;
                     clk_count <= 25'd0;
                     DOUT <= 0;
 

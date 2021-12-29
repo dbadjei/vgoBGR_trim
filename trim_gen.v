@@ -16,6 +16,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
 
     //Internal signals
     wire [11:0] trim_code
+
     //Internal storage elements
     reg [11:0] trimcode_hold;
     reg [1:0] state;
@@ -39,7 +40,6 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
     end
 
     always @(posedge div_clk or posedge RST) begin
-        
         //On reset, return to idle state
         if (RST) begin
             state <= STATE_IDLE;
@@ -67,6 +67,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
                 end
 
                 STATE_LOAD: begin
+                    TRIMCODE <= trimcode_hold;
                     state <= STATE_SHIFT;
                 end
 
@@ -93,25 +94,25 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
         end
     end
 
-
-    always @(*) begin
-        if (state == STATE_LOAD) begin
-            load = 1'b1;
-        end
-        else begin
-            load = 1'b0;
-        end
-
-        if (state == STATE_SHIFT) begin
-            enable = 1'b1;
-        end
-        else begin
-            enable = 1'b0;
+    always @(posedge div_clk or posedge RST) begin
+        if ((state == STATE_SHIFT) & (t <= MAX_T_COUNT)) begin
+            TRIMCODE[10] <= TRIMCODE[11];
+            TRIMCODE[9] <= TRIMCODE[10];
+            TRIMCODE[8] <= TRIMCODE[9];
+            TRIMCODE[7] <= TRIMCODE[8];
+            TRIMCODE[6] <= TRIMCODE[7];
+            TRIMCODE[5] <= TRIMCODE[6];
+            TRIMCODE[4] <= TRIMCODE[5];
+            TRIMCODE[3] <= TRIMCODE[4];
+            TRIMCODE[2] <= TRIMCODE[3];
+            TRIMCODE[1] <= TRIMCODE[2];
+            TRIMCODE[0] <= TRIMCODE[1];
+            DOUT <= TRIMCODE[0];
         end
     end
 
 
-
+    assign ENCLK = (t <= MAX_T_COUNT) ? div_clk : 0;
 
     
 endmodule

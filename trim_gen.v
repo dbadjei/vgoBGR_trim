@@ -1,7 +1,7 @@
-module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
+module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIM_CODE);
     input CLK50, RST, START;
     output reg DOUT;
-    output reg [11:0] TRIMCODE;
+    output reg [11:0] TRIM_CODE;
     output ENCLK;
 
     //States
@@ -16,6 +16,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
     localparam MAX_T2_COUNT = 4'd3;
 
     //Internal storage elements
+    reg [11:0] TRIMCODE;
     reg [11:0] trimcode_hold;
     reg [1:0] state;
     reg div_clk;
@@ -133,6 +134,26 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
             TRIMCODE[0] <= TRIMCODE[1];
             DOUT <= TRIMCODE[0];
             end
+        end
+    end
+
+    always @(posedge ENCLK or posedge RST) begin
+        if (RST) begin
+            TRIM_CODE <= 11'd0;
+        end
+        else begin
+	        TRIM_CODE[11] <= DOUT;
+            TRIM_CODE[10] <= TRIM_CODE[11];
+            TRIM_CODE[9] <= TRIM_CODE[10];
+            TRIM_CODE[8] <= TRIM_CODE[9];
+            TRIM_CODE[7] <= TRIM_CODE[8];
+            TRIM_CODE[6] <= TRIM_CODE[7];
+            TRIM_CODE[5] <= TRIM_CODE[6];
+            TRIM_CODE[4] <= TRIM_CODE[5];
+            TRIM_CODE[3] <= TRIM_CODE[4];
+            TRIM_CODE[2] <= TRIM_CODE[3];
+            TRIM_CODE[1] <= TRIM_CODE[2];
+            TRIM_CODE[0] <= TRIM_CODE[1];
         end
     end
 

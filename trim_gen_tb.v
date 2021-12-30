@@ -26,5 +26,5 @@ module trim_gen_tb;
                  .START(START),
                  .ENCLK(ENCLK),
                  .DOUT(DOUT),
-                 .TRIMCODE(trimCODE));
+                 .TRIM_CODE(trimCODE));
 endmodule

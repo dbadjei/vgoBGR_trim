@@ -1,9 +1,10 @@
-module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIM_CODE,BCD_OUT);
+module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
     input CLK50, RST, START;
     output reg DOUT;
-    output reg [11:0] TRIM_CODE;
+    output [17:0] LEDR;
     output ENCLK;
-    output [15:0] BCD_OUT;
+    output [6:0] HEX0, HEX1, HEX2, HEX3;
+   
 
     //States
     localparam STATE_IDLE = 2'd0;
@@ -16,8 +17,12 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIM_CODE,BCD_OUT);
     localparam MAX_T1_COUNT = 4'd13;
     localparam MAX_T2_COUNT = 4'd3;
 
+    //internal signals 
+    wire [15:0] BCD_OUT;
+    
     //Internal storage elements
     reg [11:0] TRIMCODE;
+    reg [11:0] TRIM_CODE;
     reg [11:0] trimcode_hold;
     reg [1:0] state;
     reg div_clk;
@@ -159,6 +164,8 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIM_CODE,BCD_OUT);
     end
 
     assign ENCLK = ((state == STATE_SHIFT) & (t1 <= MAX_T1_COUNT)) ? div_clk : 1'b0;
+    assign LEDR[11:0] = TRIM_CODE;
+    assign LEDR[17:12] = 6'd0;
 
     bin2bcd M1(.bin(trimcode_hold),.bcd(BCD_OUT));
     bcd2disp X0(.bcd_in(BCD_OUT[3:0]),.disp_out(HEX0));

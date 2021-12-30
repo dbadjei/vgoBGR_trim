@@ -69,7 +69,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
                 end
 
                 STATE_SHIFT: begin
-                    if (t == MAX_T_COUNT) begin
+                    if (t1 == MAX_T1_COUNT) begin
                         state <= STATE_INITIAL;
                     end
                 end
@@ -107,7 +107,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
     end
 
     always @(posedge div_clk or posedge RST) begin
-        if ((state == STATE_SHIFT) & (t <= MAX_T_COUNT)) begin
+        if ((state == STATE_SHIFT) & (t <= MAX_T1_COUNT)) begin
             TRIMCODE[10] <= TRIMCODE[11];
             TRIMCODE[9] <= TRIMCODE[10];
             TRIMCODE[8] <= TRIMCODE[9];
@@ -124,7 +124,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
     end
 
 
-    assign ENCLK = ((state == STATE_SHIFT) & (t <= MAX_T_COUNT)) ? div_clk : 0;
+    assign ENCLK = ((state == STATE_SHIFT) & (t <= MAX_T1_COUNT)) ? div_clk : 0;
 
     
 endmodule

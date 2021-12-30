@@ -12,14 +12,15 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
 
     //Max counts for clock divider
     localparam MAX_CLK_COUNT = 25'd25000000;
-    localparam MAX_T_COUNT = 4'd12;
+    localparam MAX_T1_COUNT = 4'd13;
+    localparam MAX_T2_COUNT = 4'd3;
 
     //Internal storage elements
     reg [11:0] trimcode_hold;
     reg [1:0] state;
     reg div_clk;
     reg [24:0] clk_count;
-    reg [3:0] t;
+    reg [3:0] t1, t2;
 
     //Clock divider
     always @(posedge CLK50 or posedge RST) begin
@@ -35,7 +36,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
         end
     end
 
-    always @(posedge div_clk or posedge RST) begin
+    always @(negedge div_clk or posedge RST) begin
         //On reset, return to idle state
         if (RST) begin
             state <= STATE_IDLE;
@@ -49,7 +50,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
             case (state)
                 STATE_IDLE: begin
                     if (START == 1'b1) begin
-                        state <= STATE_INITIAL;
+                        state <= STATE_LOAD;
                     end
                 end 
 
@@ -57,7 +58,9 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
                     trimcode_hold <= trimcode_hold + 1;
                     TRIMCODE <= 0;
                     DOUT <= 1'b0;
-                    state <= STATE_LOAD;
+                    if (t2 == MAX_T2_COUNT) begin
+                        state <= STATE_LOAD;
+                    end
                 end
 
                 STATE_LOAD: begin
@@ -76,14 +79,29 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
 
     always @(posedge div_clk or posedge RST) begin
         if (RST) begin
-            t <= 4'd0;
+            t1 <= 4'd0;
         end
         else begin
             if (state == STATE_SHIFT) begin
-                t <= t + 1;
+                t1 <= t1 + 1;
             end
             else begin
-                t <= 4'd0;
+                t1 <= 4'd0;
+            end
+        end
+    end
+
+
+    always @(posedge div_clk or posedge RST) begin
+        if (RST) begin
+            t2 <= 4'd0;
+        end
+        else begin
+            if (state == STATE_INITIAL) begin
+                t2 <= t2 + 1;
+            end
+            else begin
+                t2 <= 4'd0;
             end
         end
     end
@@ -106,7 +124,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,TRIMCODE);
     end
 
 
-    assign ENCLK = (t <= MAX_T_COUNT) ? div_clk : 0;
+    assign ENCLK = ((state == STATE_SHIFT) & (t <= MAX_T_COUNT)) ? div_clk : 0;
 
     
 endmodule

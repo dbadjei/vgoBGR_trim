@@ -1,5 +1,5 @@
-module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
-    input CLK50, RST, START;
+module trim_gen (CLOCK_50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
+    input CLOCK_50, RST, START;
     output reg DOUT;
     output [17:0] LEDR;
     output ENCLK;
@@ -13,7 +13,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
     localparam STATE_SHIFT = 2'd3;
 
     //Max counts for clock divider
-    localparam MAX_CLK_COUNT = 25'd25000000;
+    localparam MAX_CLK_COUNT = 25'd12500000;
     localparam MAX_T1_COUNT = 4'd13;
     localparam MAX_T2_COUNT = 4'd3;
 
@@ -30,7 +30,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
     reg [3:0] t1, t2;
 
     //Clock divider
-    always @(posedge CLK50 or posedge RST) begin
+    always @(posedge CLOCK_50 or posedge RST) begin
         if (RST) begin 
             clk_count <= 25'd0;
             div_clk <= 1'b0;
@@ -44,12 +44,12 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
         end
     end
 
+    //Define the state transitions
     always @(negedge div_clk or posedge RST) begin
         //On reset, return to idle state
         if (RST) begin
             state <= STATE_IDLE;
         end
-        //Define the state transitions
         else begin
             case (state)
                 STATE_IDLE: begin
@@ -70,13 +70,18 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
 
                 STATE_SHIFT: begin
                     if (t1 == MAX_T1_COUNT) begin
-                        state <= STATE_INITIAL;
+                        if (TRIM_CODE == 12'd4095) begin
+                            state <= STATE_IDLE;
+                        end
+                        else begin
+                            state <= STATE_INITIAL;
+                        end
                     end
                 end
             endcase
         end
     end
-
+    //Timer for ENCLK
     always @(posedge div_clk or posedge RST) begin
         if (RST) begin
             t1 <= 4'd0;
@@ -91,7 +96,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
         end
     end
 
-
+    //Timer for wait time
     always @(posedge div_clk or posedge RST) begin
         if (RST) begin
             t2 <= 4'd0;
@@ -106,7 +111,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
         end
     end
 
-
+    //Define operations in each state
     always @(posedge div_clk or posedge RST) begin
         if (RST) begin
             trimcode_hold <= 11'd0;
@@ -143,6 +148,7 @@ module trim_gen (CLK50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
         end
     end
 
+    //Mimick behaviour of circuit's internal shift registers
     always @(posedge ENCLK or posedge RST) begin
         if (RST) begin
             TRIM_CODE <= 11'd0;

@@ -1,9 +1,9 @@
 module trim_gen (CLOCK_50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
     input CLOCK_50, RST, START;
     output reg DOUT;
-    output [17:0] LEDR;
-    output ENCLK;
-    output [6:0] HEX0, HEX1, HEX2, HEX3;
+    output [17:0] LEDR; //Internal shift registers
+    output ENCLK; //Clock signal for circuit
+    output [6:0] HEX0, HEX1, HEX2, HEX3; //7-segment display
    
 
     //States

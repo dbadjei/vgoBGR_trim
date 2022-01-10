@@ -13,7 +13,7 @@ module trim_gen (CLOCK_50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
     localparam STATE_SHIFT = 2'd3;
 
     //Max counts for clock divider
-    localparam MAX_CLK_COUNT = 25'd50000;
+    localparam MAX_CLK_COUNT = 25'd12500000;
     localparam MAX_T1_COUNT = 4'd13;
     localparam MAX_T2_COUNT = 4'd3;
 
@@ -73,7 +73,6 @@ module trim_gen (CLOCK_50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
                             state <= STATE_IDLE;
                         end
                     end
-                end
             endcase
         end
     end
@@ -110,7 +109,7 @@ module trim_gen (CLOCK_50,START,RST,ENCLK,DOUT,LEDR,HEX0,HEX1,HEX2,HEX3);
     //Define operations in each state
     always @(posedge div_clk or posedge RST) begin
         if (RST) begin
-            trimcode_hold <= 12'd011110111111;
+            trimcode_hold <= 12'b011110111111;
             TRIMCODE <= 12'd0;
             DOUT <= 1'b0;
         end
